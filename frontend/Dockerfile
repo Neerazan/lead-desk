@@ -19,6 +19,12 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
+# Bake the internal Docker backend URL into next.config.ts rewrites at build time.
+# Next.js evaluates async rewrites() once when the server starts and reads process.env,
+# so we need this set before `next build` for the standalone bundle to resolve correctly.
+ARG INTERNAL_API_URL=http://backend:8000
+ENV INTERNAL_API_URL=${INTERNAL_API_URL}
+
 RUN npm run build
 
 # Stage 4: Production runner
