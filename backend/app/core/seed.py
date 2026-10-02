@@ -38,77 +38,44 @@ SEED_USERS = [
     },
 ]
 
-# 4 leads per user (index 0 → admin, index 1 → member)
-SEED_LEADS: list[list[dict]] = [
-    # Admin's leads
-    [
-        {
-            "name": "Sophia Carter",
-            "email": "sophia.carter@acmecorp.io",
-            "company": "Acme Corp",
-            "website": "https://acmecorp.io",
-            "status": LeadStatus.QUALIFIED,
-        },
-        {
-            "name": "Liam Patel",
-            "email": "liam.patel@horizonventures.com",
-            "company": "Horizon Ventures",
-            "website": "https://horizonventures.com",
-            "status": LeadStatus.CONTACTED,
-        },
-        {
-            "name": "Eva Chen",
-            "email": "eva.chen@novatech.ai",
-            "company": "NovaTech AI",
-            "website": "https://novatech.ai",
-            "status": LeadStatus.NEW,
-        },
-        {
-            "name": "James Okonkwo",
-            "email": "james.okonkwo@boldmedia.co",
-            "company": "Bold Media",
-            "website": None,
-            "status": LeadStatus.LOST,
-        },
-    ],
-    # Member's leads
-    [
-        {
-            "name": "Priya Sharma",
-            "email": "priya.sharma@brightpath.io",
-            "company": "BrightPath Solutions",
-            "website": "https://brightpath.io",
-            "status": LeadStatus.NEW,
-        },
-        {
-            "name": "Daniel Wu",
-            "email": "daniel.wu@peakanalytics.com",
-            "company": "Peak Analytics",
-            "website": "https://peakanalytics.com",
-            "status": LeadStatus.CONTACTED,
-        },
-        {
-            "name": "Amara Osei",
-            "email": "amara.osei@greenleaf.org",
-            "company": "GreenLeaf Ventures",
-            "website": None,
-            "status": LeadStatus.QUALIFIED,
-        },
-        {
-            "name": "Carlos Rivera",
-            "email": "carlos.rivera@fastlaunch.co",
-            "company": "FastLaunch Labs",
-            "website": "https://fastlaunch.co",
-            "status": LeadStatus.NEW,
-        },
-        {
-            "name": "Nina Kowalski",
-            "email": "nina.kowalski@urbanstride.eu",
-            "company": "UrbanStride",
-            "website": "https://urbanstride.eu",
-            "status": LeadStatus.LOST,
-        },
-    ],
+# Leads are seeded only for member accounts.
+# Admins see all leads globally and do not need pre-seeded leads.
+SEED_LEADS: list[dict] = [
+    {
+        "name": "Priya Sharma",
+        "email": "priya.sharma@brightpath.io",
+        "company": "BrightPath Solutions",
+        "website": "https://brightpath.io",
+        "status": LeadStatus.NEW,
+    },
+    {
+        "name": "Daniel Wu",
+        "email": "daniel.wu@peakanalytics.com",
+        "company": "Peak Analytics",
+        "website": "https://peakanalytics.com",
+        "status": LeadStatus.CONTACTED,
+    },
+    {
+        "name": "Amara Osei",
+        "email": "amara.osei@greenleaf.org",
+        "company": "GreenLeaf Ventures",
+        "website": None,
+        "status": LeadStatus.QUALIFIED,
+    },
+    {
+        "name": "Carlos Rivera",
+        "email": "carlos.rivera@fastlaunch.co",
+        "company": "FastLaunch Labs",
+        "website": "https://fastlaunch.co",
+        "status": LeadStatus.NEW,
+    },
+    {
+        "name": "Nina Kowalski",
+        "email": "nina.kowalski@urbanstride.eu",
+        "company": "UrbanStride",
+        "website": "https://urbanstride.eu",
+        "status": LeadStatus.LOST,
+    },
 ]
 
 
@@ -144,11 +111,10 @@ async def _seed(session: AsyncSession) -> None:
         logger.info("Created user: %s (%s)", user.email, user.role)
         seeded_users.append(user)
 
-    # Seed leads for each user
-    for idx, user in enumerate(seeded_users):
-        leads_data = SEED_LEADS[idx]
-
-        for lead_data in leads_data:
+    # Seed leads only for member accounts — admins see all leads globally.
+    member_users = [u for u in seeded_users if u.role == UserRole.MEMBER]
+    for user in member_users:
+        for lead_data in SEED_LEADS:
             # Check by email + owner_id to avoid duplicate leads on re-run
             result = await session.execute(
                 select(Lead).where(
