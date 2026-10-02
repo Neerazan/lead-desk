@@ -21,6 +21,8 @@ import {
   UserCheck,
 } from 'lucide-react';
 
+import { useDebounce } from '@/hooks/useDebounce';
+
 function AdminContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -38,6 +40,7 @@ function AdminContent() {
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 350);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Delete modal state
@@ -53,8 +56,8 @@ function AdminContent() {
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
-      if (search.trim()) {
-        params.append('search', search.trim());
+      if (debouncedSearch.trim()) {
+        params.append('search', debouncedSearch.trim());
       }
 
       const queryString = params.toString() ? `?${params.toString()}` : '';
@@ -69,7 +72,7 @@ function AdminContent() {
     } finally {
       setIsLoadingLeads(false);
     }
-  }, [search, statusFilter]);
+  }, [debouncedSearch, statusFilter]);
 
   // Fetch users from /api/admin/users
   const fetchUsers = useCallback(async () => {
