@@ -110,7 +110,6 @@ class RefreshTokenCreate(RefreshTokenBase):
 
 class RefreshToken(TimestampMixin, RefreshTokenBase, table=True):
     __tablename__ = "refresh_tokens"
-
     jti: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(
         foreign_key="users.id",
@@ -147,7 +146,7 @@ class TokenPayload(SQLModel):
     type: Literal["access", "refresh"]
     exp: datetime
     iat: datetime
-    jti: uuid.UUID | None = None  # JTI for refresh token tracking/revocation
+    jti: uuid.UUID | None = None  # Present only on refresh tokens (RFC 7519 §4.1.7)
 
 
 class Authenticate(BaseModel):
