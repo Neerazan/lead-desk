@@ -1,8 +1,11 @@
 from contextlib import asynccontextmanager
 
+import email_validator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
+
+email_validator.TEST_ENVIRONMENT = True
 
 from app.api import api_router
 from app.core.config import settings

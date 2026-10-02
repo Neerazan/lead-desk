@@ -91,10 +91,11 @@ async def rotate_tokens(
     return await issue_tokens(db, user)
 
 
-# async def revoke_token(db: AsyncSession, jti: uuid.UUID) -> None:
-#     """Revoke a single refresh token (logout)."""
-#     token = await db.get(RefreshToken, jti)
-#     if token and not token.is_revoked:
-#         token.is_revoked = True
-#         token.revoked_at = datetime.now(UTC)
-#         db.add(token)
+async def revoke_token(db: AsyncSession, jti: uuid.UUID) -> None:
+    """Revoke a single refresh token (logout)."""
+    token = await db.get(RefreshToken, jti)
+    if token and not token.is_revoked:
+        token.is_revoked = True
+        token.revoked_at = datetime.now(UTC)
+        db.add(token)
+

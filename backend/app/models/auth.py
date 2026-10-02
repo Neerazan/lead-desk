@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from typing import Literal
 from typing_extensions import Self
 
+import email_validator
 from pydantic import (
     BaseModel,
     EmailStr,
@@ -14,6 +15,8 @@ from pydantic import (
 )
 from sqlalchemy import DateTime
 from sqlmodel import Field, Relationship, SQLModel, func
+
+email_validator.TEST_ENVIRONMENT = True
 
 
 def get_datetime_utc() -> datetime:
@@ -146,7 +149,7 @@ class TokenPayload(SQLModel):
     type: Literal["access", "refresh"]
     exp: datetime
     iat: datetime
-    jti: uuid.UUID | None = None  # Present only on refresh tokens (RFC 7519 §4.1.7)
+    jti: uuid.UUID | None = None  # Present only on refresh tokens
 
 
 class Authenticate(BaseModel):

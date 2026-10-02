@@ -17,22 +17,13 @@ class Settings(BaseSettings):
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:
-        """
-        Derive the asyncpg connection URL from DATABASE_URL automatically.
-
-        Replaces the scheme so the same env var works for both Alembic (sync)
-        and the FastAPI async engine, no extra env var needed.
-        """
         return self.DATABASE_URL.replace(
             "postgresql://", "postgresql+asyncpg://", 1
         ).replace(
             "postgresql+psycopg://", "postgresql+asyncpg://", 1
         )
 
-    # JWT Authentication
-    # Use a single secret; in production you can split into ACCESS_SECRET/REFRESH_SECRET
     JWT_SECRET: str = "supersecretjwtkey_change_in_production_12345"
-    # Separate signing secrets per token type prevents cross-type forgery
     ACCESS_TOKEN_SECRET_KEY: str = "access_supersecret_change_in_production"
     REFRESH_TOKEN_SECRET_KEY: str = "refresh_supersecret_change_in_production"
 

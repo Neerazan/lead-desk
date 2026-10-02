@@ -1,4 +1,3 @@
-"""Security utilities: JWT token creation/verification, password hashing, and cookie helpers."""
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Literal
