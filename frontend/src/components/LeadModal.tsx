@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lead, LeadCreateInput, LeadStatus } from '@/types';
 import { apiFetch, ApiError } from '@/lib/api';
-import { X, Sparkles, AlertCircle } from 'lucide-react';
+import { X, UserPlus, AlertCircle } from 'lucide-react';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -117,7 +117,7 @@ export function LeadModal({
         <div className="modal-header">
           <div className="modal-title-wrap">
             <span className="modal-icon-badge">
-              <Sparkles size={18} />
+              <UserPlus size={18} />
             </span>
             <h2 className="modal-heading">
               {initialLead ? 'Edit Lead' : 'Create New Lead'}

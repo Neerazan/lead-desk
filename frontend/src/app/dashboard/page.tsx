@@ -10,7 +10,7 @@ import {
   Plus,
   Search,
   Users,
-  Sparkles,
+  Target,
   TrendingUp,
   Globe,
   RefreshCw,
@@ -110,7 +110,7 @@ export default function DashboardPage() {
 
           <div className="stat-card">
             <div className="stat-icon-wrap stat-icon-wrap-accent">
-              <Sparkles size={22} />
+              <Target size={22} />
             </div>
             <div>
               <div className="stat-value">{newCount}</div>
