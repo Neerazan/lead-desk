@@ -31,5 +31,5 @@ COPY --chown=appuser:appgroup . .
 # Expose backend service port
 EXPOSE 8000
 
-# Run FastAPI development server with hot reloading
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Run database migrations and start FastAPI server
+CMD ["/app/scripts/start.sh"]
