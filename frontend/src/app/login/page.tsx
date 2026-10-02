@@ -79,13 +79,6 @@ function LoginForm() {
     }
   };
 
-  const fillCredentials = (userEmail: string, userPass: string) => {
-    setEmail(userEmail);
-    setPassword(userPass);
-    setErrors({});
-    setGlobalError(null);
-  };
-
   return (
     <div className="auth-card">
       <div className="auth-brand-wrap">
@@ -192,28 +185,6 @@ function LoginForm() {
         </button>
       </form>
 
-      {/* Demo Seed Credentials Box */}
-      <div className="credentials-hint-box">
-        <div className="hint-title">Seed Demo Credentials (Click to fill)</div>
-        <div className="hint-chip-row">
-          <button
-            type="button"
-            className="hint-chip"
-            onClick={() => fillCredentials('admin@leaddesk.test', 'Admin@123')}
-          >
-            <span className="hint-role hint-role-admin">Admin Account</span>
-            <span className="hint-pass">admin@leaddesk.test</span>
-          </button>
-          <button
-            type="button"
-            className="hint-chip"
-            onClick={() => fillCredentials('member@leaddesk.test', 'Member@123')}
-          >
-            <span className="hint-role">Member Account</span>
-            <span className="hint-pass">member@leaddesk.test</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

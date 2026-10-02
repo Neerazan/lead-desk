@@ -842,59 +842,7 @@ button, input, select, textarea {
   font-size: 0.875rem;
 }
 
-.credentials-hint-box {
-  margin-top: 1.75rem;
-  padding: 1rem;
-  background: var(--color-neutral-50);
-  border: 1px dashed var(--color-neutral-300);
-  border-radius: var(--radius-sm);
-}
 
-.hint-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-neutral-600);
-  margin-bottom: 0.5rem;
-}
-
-.hint-chip-row {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.hint-chip {
-  flex: 1;
-  background: var(--color-white);
-  border: 1px solid var(--color-neutral-300);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.12s ease;
-}
-
-.hint-chip:hover {
-  border-color: var(--color-primary);
-  background: var(--color-primary-muted);
-}
-
-.hint-role {
-  font-weight: 700;
-  color: var(--color-primary);
-  display: block;
-}
-
-.hint-role-admin {
-  color: var(--color-accent);
-}
-
-.hint-pass {
-  color: var(--color-neutral-500);
-  font-size: 0.7rem;
-}
 
 /* Tabs */
 .tabs-nav {
