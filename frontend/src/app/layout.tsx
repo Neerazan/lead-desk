@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { Syne, Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import { Header } from '@/components/Header';
 import './globals.css';
 
-const syne = Syne({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
+  weight: ['400', '500', '600', '700', '800'],
   variable: '--font-heading',
   display: 'swap',
 });
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${syne.variable} ${inter.variable}`}>
+    <html lang="en" className={`${plusJakarta.variable} ${inter.variable}`}>
       <body>
         <AuthProvider>
           <div className="app-layout">

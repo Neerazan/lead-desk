@@ -1,0 +1,27 @@
+# docker-compose.override.yml — automatically merged by Docker Compose in development.
+# This file is NOT used in production (use: docker compose -f docker-compose.yml up --build).
+#
+# What it does:
+#   - Builds from the `dev` stage of the frontend Dockerfile (runs `npm run dev`)
+#   - Mounts the local ./frontend source into the container for instant hot-reload
+#   - Uses an anonymous volume for node_modules so the host never overwrites
+#     the container's installed packages
+#   - Enables WATCHPACK_POLLING for filesystems that don't support inotify (WSL2 / some NFS)
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev                      # use the lightweight dev stage
+    volumes:
+      - ./frontend:/app                # mount source — changes are reflected instantly
+      - /app/node_modules              # anonymous volume: keeps container node_modules intact
+      - /app/.next                     # anonymous volume: preserves Next.js incremental cache
+    environment:
+      NODE_ENV: development
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-http://backend:8000}
+      # Enable polling-based file watching for WSL2 / VirtualBox / NFS mounts.
+      # Remove or set to false if your filesystem supports inotify natively.
+      WATCHPACK_POLLING: "true"
+    command: npm run dev

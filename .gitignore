@@ -1,6 +1,7 @@
 # Environments & dependencies
 .venv/
 node_modules/
+.next/
 project_description.md
 
 # Python cache & build
