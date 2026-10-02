@@ -12,7 +12,22 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
 
     # Database
+    # Sync URL (used by Alembic migrations)
     DATABASE_URL: str = "postgresql://leaddesk:leaddesk_dev_secret@db:5432/leaddesk"
+
+    @property
+    def ASYNC_DATABASE_URL(self) -> str:
+        """
+        Derive the asyncpg connection URL from DATABASE_URL automatically.
+
+        Replaces the scheme so the same env var works for both Alembic (sync)
+        and the FastAPI async engine, no extra env var needed.
+        """
+        return self.DATABASE_URL.replace(
+            "postgresql://", "postgresql+asyncpg://", 1
+        ).replace(
+            "postgresql+psycopg://", "postgresql+asyncpg://", 1
+        )
 
     # JWT Authentication
     # Use a single secret; in production you can split into ACCESS_SECRET/REFRESH_SECRET

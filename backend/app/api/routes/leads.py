@@ -1,13 +1,18 @@
 from fastapi import APIRouter
+from sqlalchemy import text
+
+from app.api.deps import DbSession
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
 
 @router.get("")
-def list_leads():
+async def list_leads(db: DbSession):
+    # Placeholder: proves the async session is wired correctly
+    await db.execute(text("SELECT 1"))
     return {"leads": []}
 
 
 @router.post("")
-def create_lead():
+async def create_lead(db: DbSession):
     return {"message": "Create lead endpoint placeholder"}
