@@ -24,7 +24,11 @@ export function ProtectedRoute({
         const returnUrl = encodeURIComponent(pathname);
         router.replace(`/login?redirect=${returnUrl}`);
       } else if (allowedRoles && !allowedRoles.includes(user.role)) {
-        router.replace('/forbidden');
+        if (user.role === 'admin') {
+          router.replace('/admin');
+        } else {
+          router.replace('/forbidden');
+        }
       }
     }
   }, [user, isLoading, allowedRoles, pathname, router]);

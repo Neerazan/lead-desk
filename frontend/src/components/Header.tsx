@@ -4,13 +4,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { LogOut, LayoutDashboard, ShieldCheck, ChevronDown } from 'lucide-react';
+import { LogOut, Briefcase, Users, ChevronDown } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 export function Header() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const currentTab = searchParams.get('tab') || 'leads';
+  const isLeadsActive = pathname === '/admin' && currentTab !== 'users';
+  const isUsersActive = pathname === '/admin' && currentTab === 'users';
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -52,22 +58,22 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Navigation links - only displayed when multiple routes exist (for admin) */}
+        {/* Navigation links - for admin: Leads and Users */}
         {isAdmin && (
           <nav className="header-nav">
             <Link
-              href="/admin"
-              className={`nav-link ${pathname === '/admin' ? 'nav-link-active' : ''}`}
+              href="/admin?tab=leads"
+              className={`nav-link ${isLeadsActive ? 'nav-link-active' : ''}`}
             >
-              <ShieldCheck size={16} />
-              <span>Admin Console</span>
+              <Briefcase size={16} />
+              <span>Leads</span>
             </Link>
             <Link
-              href="/dashboard"
-              className={`nav-link ${pathname === '/dashboard' ? 'nav-link-active' : ''}`}
+              href="/admin?tab=users"
+              className={`nav-link ${isUsersActive ? 'nav-link-active' : ''}`}
             >
-              <LayoutDashboard size={16} />
-              <span>My Leads</span>
+              <Users size={16} />
+              <span>Users</span>
             </Link>
           </nav>
         )}

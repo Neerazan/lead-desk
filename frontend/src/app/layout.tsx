@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import { Header } from '@/components/Header';
+import { Toaster } from 'sonner';
 import './globals.css';
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -33,9 +35,12 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <div className="app-layout">
-            <Header />
+            <Suspense fallback={null}>
+              <Header />
+            </Suspense>
             {children}
           </div>
+          <Toaster position="top-right" richColors closeButton />
         </AuthProvider>
       </body>
     </html>

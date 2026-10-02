@@ -76,7 +76,7 @@ export default function DashboardPage() {
   const qualifiedCount = leads.filter((l) => l.status === 'qualified').length;
 
   return (
-    <ProtectedRoute allowedRoles={['member', 'admin']}>
+    <ProtectedRoute allowedRoles={['member']}>
       <main className="main-content">
         {/* Page Header */}
         <div className="page-header-row">

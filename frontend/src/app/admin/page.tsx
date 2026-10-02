@@ -1,28 +1,36 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { StatusBadge } from '@/components/StatusBadge';
-import { LeadModal } from '@/components/LeadModal';
 import { Lead, LeadStatus, User } from '@/types';
 import { apiFetch, ApiError } from '@/lib/api';
+import { toast } from 'sonner';
+import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
 import {
   ShieldCheck,
   Users,
   Briefcase,
   Search,
-  Plus,
   Trash2,
   Globe,
   RefreshCw,
   FolderOpen,
   AlertCircle,
   UserCheck,
-  CheckCircle2,
 } from 'lucide-react';
 
-export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'leads' | 'users'>('leads');
+function AdminContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get('tab');
+  const activeTab: 'leads' | 'users' = tabParam === 'users' ? 'users' : 'leads';
+
+  const setActiveTab = (tab: 'leads' | 'users') => {
+    router.replace(`/admin?tab=${tab}`);
+  };
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
@@ -31,8 +39,10 @@ export default function AdminPage() {
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  // Delete modal state
+  const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch all leads across all members
   const fetchAllLeads = useCallback(async () => {
@@ -88,15 +98,7 @@ export default function AdminPage() {
     }
   }, [activeTab, fetchUsers]);
 
-  // Auto-dismiss success notification
-  useEffect(() => {
-    if (actionSuccess) {
-      const timer = setTimeout(() => setActionSuccess(null), 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [actionSuccess]);
-
-  // Admin status update action
+  // Admin status update action with Toast
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     try {
       const updated = await apiFetch<Lead>(`/api/leads/${leadId}`, {
@@ -105,43 +107,48 @@ export default function AdminPage() {
       });
 
       setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
-      setActionSuccess(`Updated status of "${updated.name}" to ${newStatus}`);
+      toast.success(`Lead status updated to ${newStatus.toUpperCase()}`, {
+        description: `"${updated.name}" is now marked as ${newStatus}.`,
+      });
     } catch (err: unknown) {
       if (err instanceof ApiError) {
-        alert(`Status update failed: ${err.message}`);
+        toast.error('Failed to update lead status', {
+          description: err.message,
+        });
+      } else {
+        toast.error('Failed to update lead status');
       }
     }
   };
 
-  // Admin delete lead action
-  const handleDeleteLead = async (lead: Lead) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete lead "${lead.name}" (${lead.company})? This cannot be undone.`
-    );
-    if (!confirmed) return;
+  // Open confirmation modal for deleting lead
+  const openDeleteModal = (lead: Lead) => {
+    setLeadToDelete(lead);
+  };
 
+  // Confirm delete handler executed by modal
+  const handleConfirmDelete = async () => {
+    if (!leadToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await apiFetch(`/api/leads/${lead.id}`, { method: 'DELETE' });
-      setLeads((prev) => prev.filter((l) => l.id !== lead.id));
-      setActionSuccess(`Deleted lead "${lead.name}" successfully`);
+      await apiFetch(`/api/leads/${leadToDelete.id}`, { method: 'DELETE' });
+      setLeads((prev) => prev.filter((l) => l.id !== leadToDelete.id));
+      toast.success('Lead permanently deleted', {
+        description: `"${leadToDelete.name}" (${leadToDelete.company}) has been removed.`,
+      });
+      setLeadToDelete(null);
     } catch (err: unknown) {
       if (err instanceof ApiError) {
-        alert(`Delete failed: ${err.message}`);
+        toast.error('Delete failed', {
+          description: err.message,
+        });
+      } else {
+        toast.error('An unexpected error occurred while deleting.');
       }
+    } finally {
+      setIsDeleting(false);
     }
-  };
-
-  const handleLeadSaved = (newOrUpdatedLead: Lead) => {
-    setLeads((prev) => {
-      const index = prev.findIndex((l) => l.id === newOrUpdatedLead.id);
-      if (index >= 0) {
-        const copy = [...prev];
-        copy[index] = newOrUpdatedLead;
-        return copy;
-      }
-      return [newOrUpdatedLead, ...prev];
-    });
-    setActionSuccess(`Lead "${newOrUpdatedLead.name}" saved`);
   };
 
   return (
@@ -153,39 +160,26 @@ export default function AdminPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
               <span className="role-pill role-pill-admin">Administrator Console</span>
             </div>
-            <h1 className="page-title">Executive Overview</h1>
+            <h1 className="page-title">{activeTab === 'users' ? 'System Users' : 'Organization Leads'}</h1>
             <p className="page-description">
-              Supervise all organization leads, monitor assignments, and manage registered members
+              {activeTab === 'users'
+                ? 'Supervise registered users, role privileges, and account activity'
+                : 'Supervise all organization leads, monitor status conversions, and track assigned owners'}
             </p>
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button
-              onClick={() => setIsModalOpen(true)}
-              className="btn btn-primary"
+              onClick={activeTab === 'leads' ? fetchAllLeads : fetchUsers}
+              className="btn btn-secondary"
               type="button"
+              title="Refresh current data"
             >
-              <Plus size={18} />
-              <span>Create Lead</span>
+              <RefreshCw size={16} />
+              <span>Refresh</span>
             </button>
           </div>
         </div>
-
-        {/* Success Alert Banner */}
-        {actionSuccess && (
-          <div
-            className="alert-banner"
-            style={{
-              backgroundColor: '#ecfdf5',
-              color: '#065f46',
-              border: '1px solid #a7f3d0',
-              margin: '0 0 1.5rem 0',
-            }}
-          >
-            <CheckCircle2 size={16} />
-            <span>{actionSuccess}</span>
-          </div>
-        )}
 
         {/* Global Statistics */}
         <div className="stats-grid">
@@ -220,28 +214,6 @@ export default function AdminPage() {
               <div className="stat-label">System Users</div>
             </div>
           </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="tabs-nav">
-          <button
-            type="button"
-            onClick={() => setActiveTab('leads')}
-            className={`tab-btn ${activeTab === 'leads' ? 'tab-btn-active' : ''}`}
-          >
-            <Briefcase size={16} />
-            <span>All Leads</span>
-            <span className="tab-count-badge">{leads.length}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('users')}
-            className={`tab-btn ${activeTab === 'users' ? 'tab-btn-active' : ''}`}
-          >
-            <Users size={16} />
-            <span>System Users</span>
-            {users.length > 0 && <span className="tab-count-badge">{users.length}</span>}
-          </button>
         </div>
 
         {activeTab === 'leads' && (
@@ -313,16 +285,21 @@ export default function AdminPage() {
                 </div>
                 <h3 className="state-title">No leads found</h3>
                 <p className="state-desc">
-                  No records match your criteria. Create a lead to get started.
+                  No records match your filter criteria.
                 </p>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="btn btn-primary"
-                  type="button"
-                >
-                  <Plus size={16} />
-                  <span>Create Lead</span>
-                </button>
+                {(search || statusFilter !== 'all') && (
+                  <button
+                    onClick={() => {
+                      setSearch('');
+                      setStatusFilter('all');
+                    }}
+                    className="btn btn-secondary"
+                    type="button"
+                  >
+                    <RefreshCw size={15} />
+                    <span>Reset Filters</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="table-container">
@@ -409,7 +386,7 @@ export default function AdminPage() {
                           <td style={{ textAlign: 'right' }}>
                             <button
                               type="button"
-                              onClick={() => handleDeleteLead(lead)}
+                              onClick={() => openDeleteModal(lead)}
                               className="btn btn-danger"
                               style={{ padding: '5px 10px', fontSize: '0.75rem' }}
                               title="Delete this lead"
@@ -509,13 +486,25 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Lead Modal */}
-        <LeadModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onLeadSaved={handleLeadSaved}
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          isOpen={leadToDelete !== null}
+          onClose={() => setLeadToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          leadName={leadToDelete?.name || ''}
+          leadCompany={leadToDelete?.company}
+          isDeleting={isDeleting}
         />
+
       </main>
     </ProtectedRoute>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminContent />
+    </Suspense>
   );
 }
