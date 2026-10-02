@@ -1,4 +1,3 @@
-"""Admin service — business logic for administrative operations."""
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession

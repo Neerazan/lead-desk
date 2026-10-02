@@ -1,8 +1,11 @@
 from enum import StrEnum
 import uuid
 from datetime import UTC, datetime
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from app.models.lead import Lead
 
 import email_validator
 from pydantic import (
@@ -87,6 +90,12 @@ class User(TimestampMixin, UserBase, table=True):
     # Relationship to refresh tokens (cascade delete)
     refresh_tokens: list["RefreshToken"] = Relationship(
         back_populates="user",
+        cascade_delete=True,
+    )
+
+    # Relationship to leads (cascade delete)
+    leads: list["Lead"] = Relationship(
+        back_populates="owner",
         cascade_delete=True,
     )
 

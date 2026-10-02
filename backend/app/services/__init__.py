@@ -1,4 +1,3 @@
-"""Services package."""
-from app.services import admin, auth
+from app.services import admin, auth, lead
 
-__all__ = ["admin", "auth"]
+__all__ = ["admin", "auth", "lead"]
