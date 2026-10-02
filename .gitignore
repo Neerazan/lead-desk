@@ -1,0 +1,22 @@
+# Environments & dependencies
+.venv/
+node_modules/
+project_description.md
+
+# Python cache & build
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# Environment files
+.env
+*.local
+
+# OS files
+.DS_Store
+Thumbs.db
