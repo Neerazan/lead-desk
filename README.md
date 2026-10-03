@@ -140,9 +140,7 @@ Copy `.env.example` to `.env` before starting. Here is what each variable does:
 | `POSTGRES_PASSWORD` | Database password |
 | `POSTGRES_DB` | Database name |
 | `DATABASE_URL` | Full connection string used by the backend |
-| `JWT_SECRET` | Secret key used to sign JWT tokens — change this in production |
-| `ACCESS_TOKEN_SECRET_KEY` | Secret for signing access tokens |
-| `REFRESH_TOKEN_SECRET_KEY` | Secret for signing refresh tokens |
+| `JWT_SECRET` | Secret key used to sign JWT tokens (access and refresh keys are securely derived from this) — change this in production |
 | `ACCESS_TOKEN_TTL_MINUTES` | How long an access token is valid (default: 15 minutes) |
 | `REFRESH_TOKEN_TTL_DAYS` | How long a refresh token is valid (default: 7 days) |
 | `SECURE_COOKIES` | Set to `true` in production (HTTPS only); keep `false` for local HTTP |

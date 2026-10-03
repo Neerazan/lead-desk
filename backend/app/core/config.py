@@ -24,8 +24,14 @@ class Settings(BaseSettings):
         )
 
     JWT_SECRET: str = "supersecretjwtkey_change_in_production_12345"
-    ACCESS_TOKEN_SECRET_KEY: str = "access_supersecret_change_in_production"
-    REFRESH_TOKEN_SECRET_KEY: str = "refresh_supersecret_change_in_production"
+
+    @property
+    def ACCESS_TOKEN_SECRET_KEY(self) -> str:
+        return f"{self.JWT_SECRET}_access"
+
+    @property
+    def REFRESH_TOKEN_SECRET_KEY(self) -> str:
+        return f"{self.JWT_SECRET}_refresh"
 
     ACCESS_TOKEN_TTL_MINUTES: int = 15
     REFRESH_TOKEN_TTL_DAYS: int = 7

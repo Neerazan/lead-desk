@@ -20,7 +20,7 @@ services:
              python -m pytest -v --tb=short"
     environment:
       DATABASE_URL: postgresql://leaddesk:leaddesk_test_secret@db-test:5432/leaddesk_test
-      JWT_SECRET: test_jwt_secret
+      JWT_SECRET: test_jwt_secret_32_characters_long_min!
       ACCESS_TOKEN_TTL_MINUTES: "15"
       REFRESH_TOKEN_TTL_DAYS: "7"
       SECURE_COOKIES: "false"
