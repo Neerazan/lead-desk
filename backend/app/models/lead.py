@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+import sqlalchemy as sa
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -19,12 +20,23 @@ class LeadStatus(StrEnum):
     LOST = "lost"
 
 
+_lead_status_sa = sa.Enum(
+    LeadStatus,
+    name="leadstatus",
+    create_type=False,
+    values_callable=lambda enum_class: [e.value for e in enum_class],
+)
+
+
 class LeadBase(SQLModel):
     name: str = Field(min_length=1, max_length=255)
     email: EmailStr = Field(max_length=255)
     company: str = Field(min_length=1, max_length=255)
     website: str | None = Field(default=None, max_length=255)
-    status: LeadStatus = Field(default=LeadStatus.NEW)
+    status: LeadStatus = Field(
+        default=LeadStatus.NEW,
+        sa_column=sa.Column(_lead_status_sa, nullable=False),
+    )
 
 
 class LeadCreate(LeadBase):
