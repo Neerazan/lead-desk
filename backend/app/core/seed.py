@@ -36,11 +36,16 @@ SEED_USERS = [
         "password": "Member@123",
         "role": UserRole.MEMBER,
     },
+    {
+        "name": "Sophie Laurent",
+        "email": "sophie@leaddesk.test",
+        "password": "Sophie@123",
+        "role": UserRole.MEMBER,
+    },
 ]
 
-# Leads are seeded only for member accounts.
-# Admins see all leads globally and do not need pre-seeded leads.
-SEED_LEADS: list[dict] = [
+
+SEED_LEADS_MARCUS: list[dict] = [
     {
         "name": "Priya Sharma",
         "email": "priya.sharma@brightpath.io",
@@ -78,6 +83,50 @@ SEED_LEADS: list[dict] = [
     },
 ]
 
+SEED_LEADS_SOPHIE: list[dict] = [
+    {
+        "name": "Lucas Fontaine",
+        "email": "lucas.fontaine@nexora.fr",
+        "company": "Nexora Digital",
+        "website": "https://nexora.fr",
+        "status": LeadStatus.QUALIFIED,
+    },
+    {
+        "name": "Yuki Tanaka",
+        "email": "yuki.tanaka@solarchip.jp",
+        "company": "SolarChip Technologies",
+        "website": "https://solarchip.jp",
+        "status": LeadStatus.CONTACTED,
+    },
+    {
+        "name": "Fatima Al-Rashid",
+        "email": "fatima@crescentcap.ae",
+        "company": "Crescent Capital",
+        "website": "https://crescentcap.ae",
+        "status": LeadStatus.NEW,
+    },
+    {
+        "name": "Ethan Brooks",
+        "email": "ethan.brooks@vaultworks.io",
+        "company": "VaultWorks",
+        "website": "https://vaultworks.io",
+        "status": LeadStatus.LOST,
+    },
+    {
+        "name": "Isabelle Moreau",
+        "email": "isabelle.moreau@lumenpro.eu",
+        "company": "LumenPro Agency",
+        "website": None,
+        "status": LeadStatus.CONTACTED,
+    },
+]
+
+# Map each member email to their leads list
+SEED_LEADS_BY_EMAIL: dict[str, list[dict]] = {
+    "member@leaddesk.test": SEED_LEADS_MARCUS,
+    "sophie@leaddesk.test": SEED_LEADS_SOPHIE,
+}
+
 
 # ---------------------------------------------------------------------------
 # Core seeding logic
@@ -114,7 +163,8 @@ async def _seed(session: AsyncSession) -> None:
     # Seed leads only for member accounts — admins see all leads globally.
     member_users = [u for u in seeded_users if u.role == UserRole.MEMBER]
     for user in member_users:
-        for lead_data in SEED_LEADS:
+        leads_for_user = SEED_LEADS_BY_EMAIL.get(user.email, [])
+        for lead_data in leads_for_user:
             # Check by email + owner_id to avoid duplicate leads on re-run
             result = await session.execute(
                 select(Lead).where(
