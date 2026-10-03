@@ -90,13 +90,15 @@ Once the app is running, open these in your browser:
 | Backend API | http://localhost:8000 |
 | API docs (Swagger) | http://localhost:8000/docs |
 
-### Seed accounts (created automatically on first start)
+### Seed Login Credentials
 
-| Email | Password | Role | Goes to after login |
-|---|---|---|---|
-| admin@leaddesk.test | Admin@123 | admin | /admin |
-| member@leaddesk.test | Member@123 | member | /dashboard |
-| sophie@leaddesk.test | Sophie@123 | member | /dashboard |
+Use these pre-seeded accounts to test different roles:
+
+| Role | Email | Password | Landing Page | Permissions |
+|---|---|---|---|---|
+| **Admin** | `admin@leaddesk.test` | `Admin@123` | `/admin` | Can see all leads across all users & view all registered users |
+| **Member** | `member@leaddesk.test` | `Member@123` | `/dashboard` | Can only view and create their own leads |
+| **Member** | `sophie@leaddesk.test` | `Sophie@123` | `/dashboard` | Can only view and create their own leads |
 
 The seed runs automatically when the backend starts. You do not need to run anything manually.
 
@@ -168,6 +170,23 @@ All endpoints use the `/api` prefix.
 | `GET` | `/api/admin/users` | Admin only | Returns all users (no password hashes). Member gets 403. |
 
 Errors always come back in this shape: `{ "error": "message here" }`. No stack traces are ever returned.
+
+---
+
+## Screenshots
+
+### 1. Login Page
+![Login Page](docs/screenshots/login.png)
+
+### 2. Member Dashboard (`/dashboard`)
+Shows only member's own leads and the "Add lead" form:
+![Member Dashboard](docs/screenshots/member.png)
+
+### 3. Admin Page (`/admin`)
+Shows all leads across all members (with owner details) and user management list:
+![Admin Leads](docs/screenshots/admin1.png)
+
+![Admin Users](docs/screenshots/admin2.png)
 
 ---
 
