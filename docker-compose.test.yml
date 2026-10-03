@@ -1,0 +1,30 @@
+services:
+  db-test:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: leaddesk
+      POSTGRES_PASSWORD: leaddesk_test_secret
+      POSTGRES_DB: leaddesk_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leaddesk -d leaddesk_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend-test:
+    build:
+      context: ./backend
+    command: >
+      sh -c "uv sync --frozen --group dev &&
+             python -m pytest -v --tb=short"
+    environment:
+      DATABASE_URL: postgresql://leaddesk:leaddesk_test_secret@db-test:5432/leaddesk_test
+      JWT_SECRET: test_jwt_secret
+      ACCESS_TOKEN_TTL_MINUTES: "15"
+      REFRESH_TOKEN_TTL_DAYS: "7"
+      SECURE_COOKIES: "false"
+      FRONTEND_ORIGIN: http://localhost:3000
+    depends_on:
+      db-test:
+        condition: service_healthy
