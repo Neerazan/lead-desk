@@ -222,7 +222,6 @@ For production architecture, I implemented a single Nginx reverse proxy in Compo
 
 ### What is Not Finished
 
-- No rate limiting on `/api/auth/login`
 - No pagination or search/filter on the leads table
 - No GitHub Actions workflow
 - No frontend tests

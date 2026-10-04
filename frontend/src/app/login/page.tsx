@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/lib/api';
-import { ArrowRight, Lock, Mail, AlertCircle } from 'lucide-react';
+import { ArrowRight, Lock, Mail } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { Suspense, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 function LoginForm() {
   const { user, isLoading, login } = useAuth();
@@ -14,8 +15,6 @@ function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [globalError, setGlobalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // If already logged in, redirect away from /login
@@ -33,27 +32,29 @@ function LoginForm() {
     }
   }, [user, isLoading, redirectUrl, router]);
 
-  const validate = (): boolean => {
-    const errs: Record<string, string> = {};
+  const validate = (): string[] => {
+    const validationErrors: string[] = [];
     if (!email.trim()) {
-      errs.email = 'Email is required';
+      validationErrors.push('Email is required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errs.email = 'Please enter a valid email address';
+      validationErrors.push('Please enter a valid email address');
     }
 
     if (!password) {
-      errs.password = 'Password is required';
+      validationErrors.push('Password is required');
     }
 
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
+    return validationErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setGlobalError(null);
 
-    if (!validate()) return;
+    const validationErrors = validate();
+    if (validationErrors.length > 0) {
+      toast.error(validationErrors.join('. '));
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -70,9 +71,9 @@ function LoginForm() {
       }
     } catch (err: unknown) {
       if (err instanceof ApiError) {
-        setGlobalError(err.message);
+        toast.error(err.message);
       } else {
-        setGlobalError('Unable to connect to authentication service');
+        toast.error('Unable to connect to authentication service');
       }
     } finally {
       setIsSubmitting(false);
@@ -92,16 +93,6 @@ function LoginForm() {
         </p>
       </div>
 
-      {globalError && (
-        <div
-          className="alert-banner alert-banner-error"
-          style={{ margin: '0 0 1.25rem 0' }}
-        >
-          <AlertCircle size={16} />
-          <span>{globalError}</span>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
         <div className="form-group">
           <label htmlFor="login-email" className="form-label">
@@ -111,7 +102,7 @@ function LoginForm() {
             <input
               id="login-email"
               type="email"
-              className={`form-input ${errors.email ? 'form-input-error' : ''}`}
+              className="form-input"
               style={{ width: '100%', paddingLeft: '2.5rem' }}
               placeholder="name@leaddesk.test"
               value={email}
@@ -130,7 +121,6 @@ function LoginForm() {
               }}
             />
           </div>
-          {errors.email && <span className="form-field-error">{errors.email}</span>}
         </div>
 
         <div className="form-group">
@@ -141,7 +131,7 @@ function LoginForm() {
             <input
               id="login-password"
               type="password"
-              className={`form-input ${errors.password ? 'form-input-error' : ''}`}
+              className="form-input"
               style={{ width: '100%', paddingLeft: '2.5rem' }}
               placeholder="••••••••••••"
               value={password}
@@ -160,9 +150,6 @@ function LoginForm() {
               }}
             />
           </div>
-          {errors.password && (
-            <span className="form-field-error">{errors.password}</span>
-          )}
         </div>
 
         <button
