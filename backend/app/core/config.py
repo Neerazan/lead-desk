@@ -38,7 +38,11 @@ class Settings(BaseSettings):
     SECURE_COOKIES: bool = False
 
     # CORS
-    FRONTEND_ORIGIN: str = "http://localhost:3000"
+    FRONTEND_ORIGIN: str = "http://localhost"
+
+    @property
+    def CORS_ORIGINS(self) -> list[str]:
+        return [origin.strip() for origin in self.FRONTEND_ORIGIN.split(",") if origin.strip()]
 
 
 settings = Settings()

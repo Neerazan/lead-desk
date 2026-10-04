@@ -18,7 +18,8 @@ Lead Desk is a small web app where users can log in and manage sales leads. Ther
 | Icons | **Lucide React** | Consistent icon set |
 | Database | **PostgreSQL 17** | Reliable, well-supported, required by the task |
 | Package manager (backend) | **uv** | Fast Python package manager |
-| CORS | Handled by FastAPI middleware | Backend and frontend run on different ports; CORS is configured with credentials enabled for the frontend origin |
+| Reverse Proxy | **Nginx** (Alpine Unprivileged) | Serves the frontend and backend `/api` under a single origin (`http://localhost`), eliminating CORS issues |
+| CORS | Handled by FastAPI middleware | Configured for `http://localhost` with credentials enabled |
 
 ---
 
@@ -84,11 +85,11 @@ Wait about 15–20 seconds after starting for all containers to become healthy. 
 
 Once the app is running, open these in your browser:
 
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8000 |
-| API docs (Swagger) | http://localhost:8000/docs |
+| Service | URL | Description |
+|---|---|---|
+| **App & API (Single Origin)** | **http://localhost** | Served by Nginx reverse proxy (Next.js frontend + `/api` on one origin) |
+| API docs (Swagger via Proxy) | http://localhost/docs | Interactive API docs through reverse proxy |
+| OpenAPI Schema (via Proxy) | http://localhost/openapi.json | OpenAPI specification through reverse proxy |
 
 ### Seed Login Credentials
 
@@ -144,7 +145,8 @@ Copy `.env.example` to `.env` before starting. Here is what each variable does:
 | `ACCESS_TOKEN_TTL_MINUTES` | How long an access token is valid (default: 15 minutes) |
 | `REFRESH_TOKEN_TTL_DAYS` | How long a refresh token is valid (default: 7 days) |
 | `SECURE_COOKIES` | Set to `true` in production (HTTPS only); keep `false` for local HTTP |
-| `FRONTEND_ORIGIN` | The URL of the frontend, used for CORS |
+| `NGINX_PORT` | Host port mapped to the Nginx reverse proxy (default: `80`) |
+| `FRONTEND_ORIGIN` | The URL of the frontend, used for CORS (default: `http://localhost`) |
 | `INTERNAL_API_URL` | The backend URL used by Next.js server-side (inside Docker network) |
 | `NEXT_PUBLIC_API_URL` | The backend URL used by the browser (public-facing) |
 
@@ -208,19 +210,18 @@ Roles are checked on the backend for every protected endpoint. The frontend neve
 
 ### Docker Setup
 
-The three services start in this order: `db` first (PostgreSQL), then `backend` (waits for `db` to pass its healthcheck), then `frontend` (waits for `backend` to pass its healthcheck). This is done with `depends_on` and `condition: service_healthy` in `docker-compose.yml`.
+The four services start in strict dependency order: `db` first (PostgreSQL), then `backend` (waits for `db` to pass its healthcheck), then `frontend` (waits for `backend` to pass its healthcheck), and finally `proxy` (Nginx reverse proxy, which starts only after both backend and frontend are healthy). This is enforced using `depends_on` with `condition: service_healthy` across `docker-compose.yml`.
 
-Both the backend and frontend Dockerfiles run as a non-root user (`USER` instruction). The database port is not published to the host — only the backend (8000) and frontend (3000) ports are exposed.
+All application Dockerfiles run strictly as unprivileged non-root users (`USER` instruction: `appuser` for backend, `nextjs` for frontend, and `nginx` for proxy). The database, backend, and frontend ports are not published to the host — the single public entrypoint is port 80 handled by Nginx.
 
 ### Decisions and Trade-offs
 
 I chose FastAPI because it is fast to write, async by default, and has good validation built in through Pydantic. SQLModel is nice because the same model class works for both the database and the API schema. For the frontend, Next.js is a solid choice because it handles routing well and TypeScript support is built in.
 
-One thing I would do differently with more time: I would add an Nginx reverse proxy in front of both services so the frontend and the `/api` endpoints share the same origin. This removes the need for CORS configuration entirely and is a cleaner production setup.
+For production architecture, I implemented a single Nginx reverse proxy in Compose that serves both the frontend and the `/api` endpoints on one origin (`http://localhost`). This eliminates cross-origin complexity in the browser, ensures cookies are strictly same-origin, supports WebSocket upgrades for Next.js HMR, and routes Swagger docs and OpenAPI specs cleanly.
 
 ### What is Not Finished
 
-- No Nginx reverse proxy (CORS is configured instead)
 - No rate limiting on `/api/auth/login`
 - No pagination or search/filter on the leads table
 - No GitHub Actions workflow
